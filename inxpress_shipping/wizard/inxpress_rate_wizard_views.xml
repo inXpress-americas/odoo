@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="inxpress_rate_wizard_form" model="ir.ui.view">
+        <field name="name">inxpress.rate.wizard.form</field>
+        <field name="model">inxpress.rate.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Select Shipping Rate">
+                <group>
+                    <field name="order_id" invisible="1"/>
+                    <field name="carrier_id" invisible="1"/>
+                    <group>
+                        <field name="total_weight" readonly="1"/>
+                        <field name="weight_unit" readonly="1"/>
+                        <button name="action_refresh_rates" type="object"
+                                string="Refresh Rates" icon="fa-refresh"
+                                class="btn-link"/>
+                    </group>
+                </group>
+                <field name="line_ids" nolabel="1">
+                    <list editable="bottom" create="false" delete="false">
+                        <field name="carrier_name"/>
+                        <field name="service_name"/>
+                        <field name="price" widget="monetary"/>
+                        <field name="transit_time"/>
+                        <field name="carrier_code" column_invisible="1"/>
+                        <field name="service_code" column_invisible="1"/>
+                        <field name="service_level_code" optional="show"
+                               string="Level"/>
+                        <field name="currency" column_invisible="1"/>
+                        <field name="quote_data" column_invisible="1"/>
+                        <button name="action_select" type="object"
+                                string="Select" class="btn-primary"/>
+                    </list>
+                </field>
+                <footer>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_inxpress_rate_wizard" model="ir.actions.act_window">
+        <field name="name">Select Shipping Rate</field>
+        <field name="res_model">inxpress.rate.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+</odoo>

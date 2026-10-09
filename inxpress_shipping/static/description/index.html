@@ -1,0 +1,120 @@
+<section class="oe_container">
+  <div class="oe_row oe_spaced">
+    <h2 class="oe_slogan">InXpress Shipping</h2>
+    <h3 class="oe_slogan">Rates, dispatch, labels and tracking, inside Odoo</h3>
+    <p class="oe_mt32" style="text-align:center;">
+      Quote a sales order against your InXpress carriers, book the shipment from
+      the transfer, and get the label and tracking back without leaving Odoo.
+    </p>
+  </div>
+</section>
+
+<section class="oe_container oe_dark">
+  <div class="oe_row oe_spaced">
+    <h3 class="oe_slogan">What it does</h3>
+    <div class="oe_span6">
+      <h4>Rates on the sales order</h4>
+      <p>
+        Rates come from your own InXpress account, so the prices shown are the
+        prices you are contracted to. Odoo adds the cheapest one as a delivery
+        line. Click the Compare Rates button instead and you get every service
+        returned, with its name and transit time, and you pick.
+      </p>
+      <h4>Dispatch from the transfer</h4>
+      <p>
+        Booking happens on the delivery order, from the boxes actually packed.
+        InXpress takes one set of package details per shipment, so the module
+        sends the number of boxes, the shipment weight split evenly across
+        them, and the dimensions of the largest box. If the boxes differ a lot
+        in weight, Odoo logs a warning that the heaviest one may be under-rated.
+      </p>
+    </div>
+    <div class="oe_span6">
+      <h4>Labels and tracking</h4>
+      <p>
+        The label is attached to the transfer when you dispatch, and the
+        tracking number is written to the picking. The Tracking button on the
+        transfer refreshes the shipment status before it opens the carrier
+        page. To refresh status automatically every 4 hours, activate the
+        scheduled action "InXpress: Sync Tracking" under Settings &gt;
+        Technical &gt; Scheduled Actions. It is off when the module is
+        installed.
+      </p>
+      <h4>Cancellation</h4>
+      <p>
+        Cancel a booked shipment from the transfer. The module voids it with the
+        carrier and clears the tracking reference.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="oe_container">
+  <div class="oe_row oe_spaced">
+    <h3 class="oe_slogan">Parcel and freight</h3>
+    <div class="oe_span12">
+      <p>
+        A carrier runs in parcel mode or in freight (LTL) mode. Freight quotes
+        declare a handling unit, a pallet, crate or skid, with its own
+        dimensions and a freight class. Accessorials cover residential delivery
+        and a liftgate at pickup or at delivery.
+      </p>
+      <p>
+        Freight needs an InXpress API token carrying the
+        <code>freight:quote</code> and <code>freight:write</code> scopes. A
+        parcel-only token quotes parcel and nothing else.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="oe_container oe_dark">
+  <div class="oe_row oe_spaced">
+    <h3 class="oe_slogan">Units are never assumed</h3>
+    <div class="oe_span12">
+      <p>
+        The connector reads the weight, length and volume units set in your Odoo
+        database and converts before sending. Kilograms go out with centimetres,
+        pounds with inches. InXpress never receives a mixed pair, and nobody has
+        to remember which database is set to which.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="oe_container">
+  <div class="oe_row oe_spaced">
+    <h3 class="oe_slogan">International shipments</h3>
+    <div class="oe_span12">
+      <p>
+        A cross-border dispatch includes a customs declaration built from the
+        goods actually picked, with HS code and country of origin read from the
+        product form. Any product missing an HS code is named in the log by
+        product and picking, so you find out from Odoo rather than from a
+        shipment held at the border.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="oe_container oe_dark">
+  <div class="oe_row oe_spaced">
+    <h3 class="oe_slogan">Setup</h3>
+    <div class="oe_span12">
+      <p>
+        Create a delivery method, set its provider to InXpress, and enter your
+        InXpress API URL and API token. An InXpress account is required. The
+        module talks to InXpress only, never to carriers directly, so a rate
+        that looks wrong is a question for InXpress support.
+      </p>
+      <p>
+        Rates are used as returned, without currency conversion. Your Odoo
+        company currency must be the same as the currency of your InXpress
+        account, otherwise delivery prices on orders will be wrong.
+      </p>
+      <p>
+        Support: <a href="mailto:support@inxpress.com">support@inxpress.com</a>
+      </p>
+    </div>
+  </div>
+</section>

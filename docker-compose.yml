@@ -1,0 +1,28 @@
+name: odoo-inxpress
+
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: odoo
+      POSTGRES_PASSWORD: odoo
+      POSTGRES_DB: postgres
+    volumes:
+      - odoo-db-data:/var/lib/postgresql/data
+
+  odoo:
+    image: odoo:18
+    ports:
+      - "8069:8069"
+    depends_on:
+      - db
+    volumes:
+      - ./enterprise:/mnt/enterprise:ro
+      - ./inxpress_shipping:/mnt/extra-addons/inxpress_shipping
+      - odoo-data:/var/lib/odoo
+    # DEBUG for the InXpress module only: prints request/response payloads
+    command: -- --addons-path=/mnt/enterprise,/mnt/extra-addons,/usr/lib/python3/dist-packages/odoo/addons --log-handler=odoo.addons.inxpress_shipping:DEBUG
+
+volumes:
+  odoo-db-data:
+  odoo-data:

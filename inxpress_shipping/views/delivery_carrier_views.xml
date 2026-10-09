@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- Extend delivery.carrier form to show InXpress fields -->
+    <record id="view_delivery_carrier_form_inxpress" model="ir.ui.view">
+        <field name="name">delivery.carrier.form.inxpress</field>
+        <field name="model">delivery.carrier</field>
+        <field name="inherit_id" ref="delivery.view_delivery_carrier_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='delivery_details']" position="after">
+                <group name="inxpress_config"
+                       string="InXpress Configuration"
+                       colspan="2"
+                       invisible="delivery_type != 'inxpress'">
+                    <group>
+                        <field name="inxpress_base_url"
+                               placeholder="https://api.webship-x.com"/>
+                        <field name="inxpress_api_token" password="True"
+                               placeholder="ixpx_... (leave empty for username/password)"/>
+                        <field name="inxpress_username"
+                               placeholder="Username (if no API token)"
+                               invisible="inxpress_api_token"/>
+                        <field name="inxpress_password" password="True"
+                               placeholder="Password"
+                               invisible="inxpress_api_token"/>
+                    </group>
+                    <group>
+                        <field name="inxpress_shipping_mode" widget="radio"
+                               options="{'horizontal': true}"/>
+                        <field name="inxpress_freight_class"
+                               placeholder="e.g. 50 (fallback)"
+                               invisible="inxpress_shipping_mode != 'freight'"/>
+                        <field name="inxpress_handling_unit_type"
+                               placeholder="e.g. Pallet"
+                               invisible="inxpress_shipping_mode != 'freight'"/>
+                        <field name="inxpress_freight_package_type_id"
+                               invisible="inxpress_shipping_mode != 'freight'"/>
+                        <field name="inxpress_freight_residential"
+                               invisible="inxpress_shipping_mode != 'freight'"/>
+                        <field name="inxpress_freight_liftgate_delivery"
+                               invisible="inxpress_shipping_mode != 'freight'"/>
+                        <field name="inxpress_freight_liftgate_pickup"
+                               invisible="inxpress_shipping_mode != 'freight'"/>
+                    </group>
+                    <group>
+                        <field name="inxpress_carrier_code"
+                               placeholder="e.g. UPS, FEDEX, DHL"/>
+                        <field name="inxpress_service_code"
+                               placeholder="Optional service filter"/>
+                        <field name="inxpress_default_package_type_id"/>
+                        <field name="inxpress_duties_paid_by" widget="radio"
+                               options="{'horizontal': true}"/>
+                    </group>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

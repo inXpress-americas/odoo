@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="view_sale_order_form_inxpress" model="ir.ui.view">
+        <field name="name">sale.order.form.inxpress</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="delivery.view_order_form_with_carrier"/>
+        <field name="arch" type="xml">
+            <field name="delivery_set" position="after">
+                <field name="inxpress_all_quotes" invisible="1"/>
+                <field name="inxpress_selected_carrier_name" invisible="1"/>
+                <field name="inxpress_selected_service_name" invisible="1"/>
+                <field name="inxpress_selected_carrier_code" invisible="1"/>
+                <field name="inxpress_selected_service_code" invisible="1"/>
+                <field name="inxpress_quote_data" invisible="1"/>
+            </field>
+            <div name="so_button_below_order_lines" position="inside">
+                <button name="action_inxpress_view_rates"
+                        type="object"
+                        string="Compare Rates"
+                        class="btn-link"
+                        invisible="not inxpress_all_quotes"/>
+                <field name="inxpress_selected_carrier_name" readonly="1"
+                       invisible="not inxpress_selected_carrier_name"
+                       nolabel="1" class="oe_inline text-muted"/>
+                <field name="inxpress_selected_service_name" readonly="1"
+                       invisible="not inxpress_selected_service_name"
+                       nolabel="1" class="oe_inline text-muted"/>
+            </div>
+            <xpath expr="//page[@name='other_information']" position="after">
+                <page string="InXpress" name="inxpress_info">
+                    <group>
+                        <group string="Shipment Details">
+                            <field name="inxpress_content_type"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

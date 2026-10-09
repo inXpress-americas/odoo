@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+.DS_Store
+*.bak
+*.bak[0-9]
+
+# Odoo Enterprise source is licensed
+enterprise/
+
+# Internal working notes, kept out of the repo
+docs/
+

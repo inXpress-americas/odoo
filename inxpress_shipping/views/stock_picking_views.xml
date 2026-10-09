@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_picking_form_inxpress" model="ir.ui.view">
+        <field name="name">stock.picking.form.inxpress</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_inxpress_print_label"
+                        string="Print InXpress Label"
+                        type="object"
+                        class="oe_highlight"
+                        invisible="not inxpress_shipment_id or inxpress_has_label"/>
+            </xpath>
+            <!-- Warehouse dates, not the collection: InXpress books the
+                 pickup on its side and the dispatch sends no date, so showing
+                 them here invites a user to reschedule a courier that is not
+                 listening. -->
+            <xpath expr="//label[@for='scheduled_date']" position="attributes">
+                <attribute name="invisible">delivery_type == 'inxpress'</attribute>
+            </xpath>
+            <xpath expr="//field[@name='scheduled_date']" position="attributes">
+                <attribute name="invisible">delivery_type == 'inxpress'</attribute>
+            </xpath>
+            <xpath expr="//field[@name='date_done']" position="attributes">
+                <attribute name="invisible">state != 'done' or delivery_type == 'inxpress'</attribute>
+            </xpath>
+            <xpath expr="//field[@name='origin']" position="after">
+                <!-- Loaded but never shown: the buttons above test it, and
+                     the internal id means nothing to whoever reads the form -->
+                <field name="inxpress_shipment_id" invisible="1"/>
+                <field name="inxpress_number_of_packages"
+                       invisible="state == 'done'"/>
+                <field name="inxpress_label_url" invisible="1"/>
+                <field name="inxpress_has_label" invisible="1"/>
+                <field name="inxpress_tracking_status" readonly="1"
+                       invisible="not inxpress_tracking_status"/>
+                <field name="inxpress_tracking_date" readonly="1"
+                       invisible="not inxpress_tracking_status"/>
+                <field name="inxpress_tracking_history" readonly="1"
+                       invisible="not inxpress_tracking_history"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
