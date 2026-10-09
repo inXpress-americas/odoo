@@ -48,6 +48,8 @@
                         <field name="inxpress_service_code"
                                placeholder="Optional service filter"/>
                         <field name="inxpress_default_package_type_id"/>
+                        <field name="inxpress_duties_paid_by" widget="radio"
+                               options="{'horizontal': true}"/>
                     </group>
                 </group>
             </xpath>

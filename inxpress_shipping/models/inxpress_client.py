@@ -51,8 +51,9 @@ class InXpressClient:
             except Exception:
                 pass
         if not token:
-            _logger.error("Login response headers: %s", dict(resp.headers))
-            _logger.error("Login response body: %s", resp.text[:500])
+            _logger.error("InXpress login %s returned %s but no JWT token", url, resp.status_code)
+            _logger.debug("Login response headers: %s", dict(resp.headers))
+            _logger.debug("Login response body: %s", resp.text[:500])
             raise ValueError("Login succeeded but no JWT token found in response")
         # Ensure Bearer prefix
         if not token.startswith("Bearer "):
@@ -78,13 +79,15 @@ class InXpressClient:
     def get_quote(self, payload):
         """POST /api/v3/integrations/quote - get live rates."""
         url = f"{self.base_url}/api/v3/integrations/rates"
-        _logger.info("InXpress QUOTE POST %s payload=%s", url, json.dumps(payload, indent=2, default=str)[:3000])
+        _logger.info("InXpress QUOTE POST %s", url)
+        _logger.debug("InXpress QUOTE payload=%s", json.dumps(payload, indent=2, default=str)[:3000])
         resp = self.session.post(url, json=payload, timeout=TIMEOUT)
         if not resp.ok:
-            _logger.error("InXpress QUOTE %s returned %s: %s", url, resp.status_code, resp.text[:2000])
+            _logger.error("InXpress QUOTE %s returned %s: %s", url, resp.status_code, resp.reason)
+            _logger.debug("InXpress QUOTE error body: %s", resp.text[:2000])
         resp.raise_for_status()
         result = resp.json()
-        _logger.info("InXpress QUOTE response: %s", json.dumps(result, indent=2)[:5000])
+        _logger.debug("InXpress QUOTE response: %s", json.dumps(result, indent=2)[:5000])
         return result
 
     # ------------------------------------------------------------------
@@ -97,12 +100,14 @@ class InXpressClient:
         Returns the draft with an ID (pendingShipmentId) needed for dispatch.
         """
         url = f"{self.base_url}/api/v3/draft-shipments"
-        _logger.info("InXpress SAVE DRAFT %s payload=%s", url, json.dumps(payload, indent=2, default=str)[:5000])
+        _logger.info("InXpress SAVE DRAFT %s", url)
+        _logger.debug("InXpress SAVE DRAFT payload=%s", json.dumps(payload, indent=2, default=str)[:5000])
         resp = self.session.post(url, json=payload, timeout=TIMEOUT)
         if not resp.ok:
-            _logger.error("InXpress SAVE DRAFT %s returned %s: %s", url, resp.status_code, resp.text[:2000])
+            _logger.error("InXpress SAVE DRAFT %s returned %s: %s", url, resp.status_code, resp.reason)
+            _logger.debug("InXpress SAVE DRAFT error body: %s", resp.text[:2000])
         resp.raise_for_status()
-        _logger.info("InXpress SAVE DRAFT response: %s", resp.text[:2000])
+        _logger.debug("InXpress SAVE DRAFT response: %s", resp.text[:2000])
         return resp.json()
 
     # ------------------------------------------------------------------
@@ -116,7 +121,8 @@ class InXpressClient:
         _logger.info("InXpress CREATE COMMERCIAL INVOICE for draft %s", draft_id)
         resp = self.session.post(url, json=payload, timeout=TIMEOUT)
         if not resp.ok:
-            _logger.error("InXpress COMMERCIAL INVOICE %s returned %s: %s", url, resp.status_code, resp.text[:2000])
+            _logger.error("InXpress COMMERCIAL INVOICE %s returned %s: %s", url, resp.status_code, resp.reason)
+            _logger.debug("InXpress COMMERCIAL INVOICE error body: %s", resp.text[:2000])
         resp.raise_for_status()
         return resp.json()
 
@@ -127,12 +133,14 @@ class InXpressClient:
     def dispatch_shipment(self, payload):
         """POST /api/v3/integrations/shipments - book a shipment and get label."""
         url = f"{self.base_url}/api/v3/integrations/shipments"
-        _logger.info("InXpress DISPATCH %s payload=%s", url, json.dumps(payload, indent=2, default=str)[:5000])
+        _logger.info("InXpress DISPATCH %s", url)
+        _logger.debug("InXpress DISPATCH payload=%s", json.dumps(payload, indent=2, default=str)[:5000])
         resp = self.session.post(url, json=payload, timeout=TIMEOUT)
         if not resp.ok:
-            _logger.error("InXpress DISPATCH %s returned %s: %s", url, resp.status_code, resp.text[:2000])
+            _logger.error("InXpress DISPATCH %s returned %s: %s", url, resp.status_code, resp.reason)
+            _logger.debug("InXpress DISPATCH error body: %s", resp.text[:2000])
         else:
-            _logger.info("InXpress DISPATCH response: %s", resp.text[:2000])
+            _logger.debug("InXpress DISPATCH response: %s", resp.text[:2000])
         resp.raise_for_status()
         return resp.json()
 
@@ -210,19 +218,20 @@ class InXpressClient:
         url = f"{self.base_url}{path}"
         _logger.info("InXpress GET %s", url)
         resp = self.session.get(url, timeout=TIMEOUT)
-        _logger.info("InXpress GET %s status=%s content-type=%s body=%s",
-                      url, resp.status_code,
-                      resp.headers.get("Content-Type", "?"),
-                      resp.text[:500])
+        _logger.info("InXpress GET %s status=%s", url, resp.status_code)
+        _logger.debug("InXpress GET %s content-type=%s body=%s",
+                      url, resp.headers.get("Content-Type", "?"), resp.text[:500])
         resp.raise_for_status()
         return resp.json()
 
     def _post(self, path, payload):
         url = f"{self.base_url}{path}"
-        _logger.info("InXpress POST %s payload=%s", url, payload)
+        _logger.info("InXpress POST %s", url)
+        _logger.debug("InXpress POST %s payload=%s", url, payload)
         resp = self.session.post(url, json=payload, timeout=TIMEOUT)
         if not resp.ok:
-            _logger.error("InXpress POST %s returned %s: %s", url, resp.status_code, resp.text[:1000])
+            _logger.error("InXpress POST %s returned %s: %s", url, resp.status_code, resp.reason)
+            _logger.debug("InXpress POST %s error body: %s", url, resp.text[:1000])
         resp.raise_for_status()
         return resp.json()
 

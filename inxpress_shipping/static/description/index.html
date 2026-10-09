@@ -17,23 +17,28 @@
       <p>
         Rates come from your own InXpress account, so the prices shown are the
         prices you are contracted to. Odoo adds the cheapest one as a delivery
-        line. Click the InXpress Rates button instead and you get every service
+        line. Click the Compare Rates button instead and you get every service
         returned, with its name and transit time, and you pick.
       </p>
       <h4>Dispatch from the transfer</h4>
       <p>
         Booking happens on the delivery order, from the boxes actually packed.
-        Each parcel carries its own weight and dimensions, so a three-box
-        shipment is sent as three parcels rather than one combined total.
+        InXpress takes one set of package details per shipment, so the module
+        sends the number of boxes, the shipment weight split evenly across
+        them, and the dimensions of the largest box. If the boxes differ a lot
+        in weight, Odoo logs a warning that the heaviest one may be under-rated.
       </p>
     </div>
     <div class="oe_span6">
       <h4>Labels and tracking</h4>
       <p>
-        The label is attached to the transfer when you dispatch. The tracking
-        number is written to the picking, and a scheduled action re-reads
-        shipment status so carrier events show up in Odoo without anyone
-        checking a carrier website.
+        The label is attached to the transfer when you dispatch, and the
+        tracking number is written to the picking. The Tracking button on the
+        transfer refreshes the shipment status before it opens the carrier
+        page. To refresh status automatically every 4 hours, activate the
+        scheduled action "InXpress: Sync Tracking" under Settings &gt;
+        Technical &gt; Scheduled Actions. It is off when the module is
+        installed.
       </p>
       <h4>Cancellation</h4>
       <p>
@@ -101,6 +106,11 @@
         InXpress API URL and API token. An InXpress account is required. The
         module talks to InXpress only, never to carriers directly, so a rate
         that looks wrong is a question for InXpress support.
+      </p>
+      <p>
+        Rates are used as returned, without currency conversion. Your Odoo
+        company currency must be the same as the currency of your InXpress
+        account, otherwise delivery prices on orders will be wrong.
       </p>
       <p>
         Support: <a href="mailto:support@inxpress.com">support@inxpress.com</a>

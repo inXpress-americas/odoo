@@ -103,6 +103,16 @@ class DeliveryCarrier(models.Model):
         string="Liftgate Pickup",
         help="Adds the TAILPICK accessorial to freight quotes and dispatches.",
     )
+    inxpress_duties_paid_by = fields.Selection(
+        [("recipient", "Recipient"), ("sender", "Sender")],
+        string="Duties Paid By",
+        default="recipient",
+        required=True,
+        help="Who pays duties and taxes on an international shipment whose "
+             "order and company set no Incoterm: Recipient sends DAP, Sender "
+             "sends DDP. An Incoterm on the order, or the company default, "
+             "always wins.",
+    )
 
     # ------------------------------------------------------------------
     # Helpers
@@ -126,7 +136,9 @@ class DeliveryCarrier(models.Model):
             action, reference, record.name if record else "-", exc,
         )
         return UserError(_(
-            "Something went wrong. Please contact InXpress.\n\nReference: %s",
+            "We were unable to process your shipment. Please review your shipment "
+            "details or contact your InXpress Representative for assistance."
+            "\n\nReference: %s",
             reference,
         ))
 
@@ -466,29 +478,31 @@ class DeliveryCarrier(models.Model):
         )
 
     def _inxpress_incoterm(self, picking):
-        """Incoterm to declare, from the sale order, then the company default.
+        """Incoterm to declare, and where it came from, as (code, source).
 
         DHL requires content/incoterm on a customs-declarable shipment, and its
         dispatch transform reads the field unguarded: sending nothing aborted
         the transform and DHL rejected the resulting error body with every
         required key reported missing, never mentioning the incoterm.
 
-        Odoo keeps no incoterm on the shipping method or the picking - it lives
-        on the sale order, defaulted from Accounting > Settings > Default
-        Incoterm (res.company.incoterm_id). DAP is the last resort because it
-        is what a carrier assumes when no term is agreed: duties settled by the
-        receiver on arrival. Guarded with _fields because both are optional
-        installs - no account module, no incoterm field.
+        The sale order's Incoterm wins, then the company default (Accounting >
+        Settings > Default Incoterm), both guarded with _fields because they
+        are optional installs. Last comes this method's Duties Paid By, the
+        same choice Odoo's UPS connector asks for: Sender is DDP, Recipient is
+        DAP. It used to be a hard-coded DAP, which a company paying its
+        customers' duties never saw. The source is returned so the dispatch
+        can say on the transfer which one was used.
         """
         order = picking.sale_id
         if order and "incoterm" in order._fields and order.incoterm:
-            return order.incoterm.code
+            return order.incoterm.code, _("the sales order")
 
         company = picking.company_id or self.env.company
         if "incoterm_id" in company._fields and company.incoterm_id:
-            return company.incoterm_id.code
+            return company.incoterm_id.code, _("the company default")
 
-        return "DAP"
+        code = "DDP" if self.inxpress_duties_paid_by == "sender" else "DAP"
+        return code, _("Duties Paid By on %s", self.name)
 
     def _inxpress_line_weight(self, commodity, weight_unit):
         """Weight of this whole customs line, in the order's weight unit.
@@ -712,7 +726,7 @@ class DeliveryCarrier(models.Model):
     def inxpress_rate_shipment(self, order):
         """Called by Odoo to get the shipping rate at checkout / SO.
 
-        Returns the cheapest rate. Users can click "InXpress Rates"
+        Returns the cheapest rate. Users can click "Compare Rates"
         on the SO to see all rates and pick a different one.
         """
         try:
@@ -752,7 +766,7 @@ class DeliveryCarrier(models.Model):
             len(quote_items), len(exclusions),
         )
         for idx, item in enumerate(quote_items):
-            _logger.info(
+            _logger.debug(
                 "  Rate %d: carrier=%s (%s), service=%s, price=%s, transit=%s days",
                 idx + 1,
                 item.get("carrierName", ""),
@@ -762,14 +776,14 @@ class DeliveryCarrier(models.Model):
                 item.get("transitTime", "N/A"),
             )
         for exc in exclusions[:5]:  # Log first 5 exclusions
-            _logger.info(
+            _logger.debug(
                 "  Excluded: carrier=%s, code=%s, reason=%s",
                 exc.get("scac", ""),
                 exc.get("code", ""),
                 exc.get("resolution", ""),
             )
         if len(exclusions) > 5:
-            _logger.info("  ... and %d more exclusions", len(exclusions) - 5)
+            _logger.debug("  ... and %d more exclusions", len(exclusions) - 5)
 
         if not quote_items:
             msg = "No rates returned"
@@ -786,7 +800,7 @@ class DeliveryCarrier(models.Model):
 
         # Pick cheapest
         best = min(quote_items, key=lambda q: q.get("amount", 0) or float("inf"))
-        _logger.info(
+        _logger.debug(
             "InXpress selected cheapest: carrier=%s (%s), service=%s, price=%s",
             best.get("carrierName", ""),
             best.get("carrierCode", ""),
@@ -810,7 +824,7 @@ class DeliveryCarrier(models.Model):
         if num_rates > 1:
             warning = _(
                 "Showing cheapest rate (%(carrier)s - %(service)s). "
-                "%(count)s rates available; click 'InXpress Rates' to compare.",
+                "%(count)s rates available; click 'Compare Rates' to compare.",
                 carrier=carrier_name,
                 service=service_name,
                 count=num_rates,
@@ -948,10 +962,11 @@ class DeliveryCarrier(models.Model):
             if service_level_code:
                 payload["serviceLevelCode"] = service_level_code
 
+            incoterm_source = None
             if self._inxpress_is_international(picking):
                 # Declarable lane: DHL needs the incoterm whether or not the
                 # goods lines make it through, so it is set before them
-                payload["incoterm"] = self._inxpress_incoterm(picking)
+                payload["incoterm"], incoterm_source = self._inxpress_incoterm(picking)
                 customs_items = self._inxpress_customs_items(picking, weight_unit)
                 if customs_items:
                     payload["customsItems"] = customs_items
@@ -991,6 +1006,12 @@ class DeliveryCarrier(models.Model):
                 self._inxpress_attach_label(
                     client, picking, shipment_id, resp.get("labelUrl"),
                 )
+                if incoterm_source:
+                    picking.message_post(body=_(
+                        "InXpress customs: Incoterm %(code)s sent, taken from "
+                        "%(origin)s.",
+                        code=payload["incoterm"], origin=incoterm_source,
+                    ))
 
                 results.append({
                     "exact_price": float(price),

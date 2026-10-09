@@ -20,7 +20,8 @@ services:
       - ./enterprise:/mnt/enterprise:ro
       - ./inxpress_shipping:/mnt/extra-addons/inxpress_shipping
       - odoo-data:/var/lib/odoo
-    command: -- --addons-path=/mnt/enterprise,/mnt/extra-addons,/usr/lib/python3/dist-packages/odoo/addons
+    # DEBUG for the InXpress module only: prints request/response payloads
+    command: -- --addons-path=/mnt/enterprise,/mnt/extra-addons,/usr/lib/python3/dist-packages/odoo/addons --log-handler=odoo.addons.inxpress_shipping:DEBUG
 
 volumes:
   odoo-db-data:

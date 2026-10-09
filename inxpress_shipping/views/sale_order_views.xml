@@ -32,9 +32,6 @@
                     <group>
                         <group string="Shipment Details">
                             <field name="inxpress_content_type"/>
-                            <field name="inxpress_commercial_invoice_number"
-                                   placeholder="e.g. INV-2026-001"/>
-                            <field name="inxpress_invoice_issue_date"/>
                         </group>
                     </group>
                 </page>

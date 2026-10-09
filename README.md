@@ -63,6 +63,15 @@ Freight adds a freight class, a handling unit type, its own package type, and
 the residential and liftgate accessorials. It needs a token carrying the
 `freight:quote` and `freight:write` scopes.
 
+Rates are used as WebShip-X returns them, with no currency conversion. The
+`currency` field on a rate response is always `"USD"` on this path, whatever
+the amounts are really in, so Odoo cannot convert. The Odoo company currency
+must match the InXpress account currency.
+
+Tracking status refreshes when a user clicks Tracking on the transfer. The
+scheduled action "InXpress: Sync Tracking" refreshes it every 4 hours, but it
+ships inactive. Activate it under Settings > Technical > Scheduled Actions.
+
 ## How a quote gets its dimensions
 
 In order of precedence, from `_inxpress_dimensions_payload`:
@@ -78,10 +87,14 @@ Setting a Default Package Type means product volume is never used for rating.
 That is deliberate. A declared box is one that exists, and carriers price the
 box they are handed.
 
-Dispatch works differently. It sends the real packed boxes, one parcel each
-with its own weight and dimensions, and falls back to the same helper only for
-a package with no dimensions of its own. Quote and dispatch describe the same
-order differently on purpose, so their prices can differ.
+Dispatch works differently. It reads the real packed boxes, but `packageDetails`
+holds one set of values per shipment, so it sends the number of boxes, the
+shipment weight split evenly across them, and the dimensions of the largest box
+(`_inxpress_details_dimensions`). A box with no dimensions of its own falls back
+to the same helper as the quote. When box weights differ by more than 20% from
+the average, `_inxpress_warn_uneven_packages` logs a warning that the heaviest
+box may be under-rated. Quote and dispatch describe the same order differently
+on purpose, so their prices can differ.
 
 Units are read from the Odoo database rather than assumed. Kilograms go out
 with centimetres, pounds with inches.
