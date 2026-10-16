@@ -1238,6 +1238,32 @@ class SaleOrder(models.Model):
             return 1.0
         return weight
 
+    def _inxpress_delivery_line_name(self):
+        """Shipping line label: the carrier picked, then (InXpress).
+
+        One name whichever button set the rate, so the order, the quotation
+        PDF, the portal and the invoice all say who is delivering it. False
+        before any rate has been picked, which leaves Odoo's own name.
+        """
+        self.ensure_one()
+        if not self.inxpress_selected_carrier_name:
+            return False
+        return _("%s (InXpress)", self.inxpress_selected_carrier_name)
+
+    def _prepare_delivery_line_vals(self, carrier, price_unit):
+        """Name the line after the selected carrier on "Add Shipping"."""
+        values = super()._prepare_delivery_line_vals(carrier, price_unit)
+        name = (
+            carrier.delivery_type == "inxpress"
+            and self._inxpress_delivery_line_name()
+        )
+        if name:
+            # Same rule core uses to mark a free_over line
+            if carrier.free_over and self.currency_id.is_zero(price_unit):
+                name = _("%s\nFree Shipping", name)
+            values["name"] = name
+        return values
+
     def action_inxpress_view_rates(self):
         """Button action to open the rate selection wizard."""
         self.ensure_one()

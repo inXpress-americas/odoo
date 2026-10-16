@@ -53,7 +53,9 @@ class InXpressRateWizard(models.TransientModel):
         delivery_line = order.order_line.filtered(lambda l: l.is_delivery)
         if delivery_line:
             delivery_line.price_unit = line.price
-            delivery_line.name = f"Shipping: {line.carrier_name} - {line.service_name}"
+            delivery_line.name = (
+                order._inxpress_delivery_line_name() or delivery_line.name
+            )
         else:
             # Add a delivery line via the standard flow
             order._create_delivery_line(self.carrier_id, line.price)
